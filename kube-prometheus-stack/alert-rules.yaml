@@ -1,0 +1,45 @@
+additionalPrometheusRulesMap:
+  custom-rules:
+    groups:
+    - name: airflow
+      rules:
+      - alert: AirflowSchedulerUnhealthy
+        expr: rate(airflow_scheduler_heartbeat{type="counter"}[1m]) == 0
+        for: 6m
+        labels:
+          tier: airflow
+          component: scheduler
+          workspace: "{{ printf \"%q\" \"{{ $labels.workspace }}\" }}"
+          deployment: "{{ printf \"%q\" \"{{ $labels.deployment }}\" }}"
+        annotations:
+          summary: "{{ printf \"%q\" \"{{ $labels.deployment }} scheduler is unhealthy\" }}"
+          description: "{{ printf \"%q\" \"The {{ $labels.deployment }} scheduler's heartbeat has dropped below the acceptable rate.\" }}"
+      - alert: AirflowTasksPendingIncreasing
+        expr: (max_over_time(airflow_scheduler_tasks_pending[5m]) - max_over_time(airflow_scheduler_tasks_pending[5m] offset 5m)) > 0
+        for: 30m
+        labels:
+          tier: airflow
+          workspace: "{{ printf \"%q\" \"{{ $labels.workspace }}\" }}"
+          deployment: "{{ printf \"%q\" \"{{ $labels.deployment }}\" }}"
+        annotations:
+          summary: "{{ printf \"%q\" \"{{ $labels.deployment }} is creating tasks faster than it's clearing them.\" }}"
+          description: "{{ printf \"%q\" \"{{ $labels.deployment }}: the number of pending tasks has been increasing for 30 minutes\" }}"
+      - alert: ManyUnhealthySchedulers
+        expr: count(rate(airflow_scheduler_heartbeat{}[1m]) <= 0) > 5
+        for: 5m
+        labels:
+          tier: platform
+          severity: critical
+        annotations:
+          summary: "{{ printf \"%q\" \"{{ $value }} airflow schedulers are not heartbeating\" }}"
+          description: "If more than 5 Airflow Schedulers are not heartbeating for more than 5 minutes, this alarm fires."
+      - alert: SchedulersNotHealthy
+        expr: (count(rate(airflow_scheduler_heartbeat{}[1m]) > 0) / count(rate(airflow_scheduler_heartbeat{}[1m]))) < 0.5
+        for: 5m
+        labels:
+          tier: platform
+          component: airflow
+          severity: critical
+        annotations:
+          summary: "Half or more of schedulers do not have a heartbeat"
+          description: "{{ printf \"%q\" \"{{ $value }} schedulers do not have a heartbeat in the last five minutes\" }}"

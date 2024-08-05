@@ -1,0 +1,33 @@
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: kube-prometheus-stack
+    meta.helm.sh/release-namespace: monitoring
+  name: prometheus-service
+  namespace: monitoring
+spec:
+  selector:
+    app.kubernetes.io/instance: kube-prometheus-stack-prometheus
+    app.kubernetes.io/managed-by: prometheus-operator
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/version: 2.48.1
+    controller-revision-hash: prometheus-kube-prometheus-stack-prometheus-76dc8d49f4
+    operator.prometheus.io/name: kube-prometheus-stack-prometheus
+    operator.prometheus.io/shard: "0"
+    prometheus: kube-prometheus-stack-prometheus
+    statefulset.kubernetes.io/pod-name: prometheus-kube-prometheus-stack-prometheus-0
+  ports:
+  - name: http-web
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  - appProtocol: http
+    name: reloader-web
+    port: 8080
+    protocol: TCP
+    targetPort: reloader-web
+
+

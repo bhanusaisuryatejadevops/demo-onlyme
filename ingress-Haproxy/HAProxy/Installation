@@ -1,0 +1,11 @@
+sudo apt update
+
+sudo apt install haproxy
+
+Save the /etc/haproxy/haproxy.cfg and restrat the haproxy
+
+sudo systemctl enable haproxy
+
+sudo systemctl restart haproxy
+
+sudo systemctl status haproxy

@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "prometheus-statsd-exporter.fullname" . }}
+  labels:
+    {{- include "prometheus-statsd-exporter.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.web.port }}
+      targetPort: web
+      protocol: TCP
+      name: web
+    {{- if .Values.statsd.tcpPort }}
+    - port: {{ .Values.statsd.tcpPort }}
+      targetPort: statsd-tcp
+      protocol: TCP
+      name: statsd-tcp
+    {{- end }}
+    {{- if and (not (empty .Values.statsd.udpPort)) (not .Values.service.enableSeparateUdpService) }}
+    - port: {{ .Values.statsd.udpPort }}
+      targetPort: statsd-udp
+      protocol: UDP
+      name: statsd-udp
+    {{- end }}
+  selector:
+    {{- include "prometheus-statsd-exporter.selectorLabels" . | nindent 4 }}
+{{- if .Values.service.enableSeparateUdpService }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "prometheus-statsd-exporter.fullname" . }}-udp
+  labels:
+    {{- include "prometheus-statsd-exporter.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.statsd.udpPort }}
+      targetPort: statsd-udp
+      protocol: UDP
+      name: statsd-udp
+  selector:
+    {{- include "prometheus-statsd-exporter.selectorLabels" . | nindent 4 }}
+{{- end }}

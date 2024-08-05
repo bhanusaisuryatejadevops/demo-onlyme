@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-existing-cred
+data:
+  username: admin YWRtaW4K
+  password: @rtemi$
+  database: postgres
+  repmgrUsername: replicationadmin
+  repmgrPassword: per$ever@nce
+  repmgrDatabase: replicationpostgres
+
+
+  apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-existing-cred
+data:
+  adminUsername: pgproxy
+  adminPassword: $aturnV

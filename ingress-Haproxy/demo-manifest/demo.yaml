@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-project
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-project
+  template:
+    metadata:
+      labels:
+        app: nginx-project
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+      nodeSelector:
+        kubernetes.io/hostname: worker-2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-project
+  namespace: demo
+spec:
+  type: NodePort
+  ports:
+    - name: http-web
+      port: 80
+      protocol: TCP
+      targetPort: 80
+      nodePort: 30009
+  selector:
+    app: nginx-project
